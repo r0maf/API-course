@@ -1,11 +1,13 @@
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request
 
-app = FastAPI() 
+app = FastAPI()
 
-@app.get('/')
+
+@app.get("/")
 async def root():
-    return {'message': 'hafflo'}
+    return {"message": "hafflo"}
 
-@app.get('/posts/')
+
+@app.get("/posts/")
 def get_posts(data: Request):
-    return {'data': data.query_params}
+    return {"data": data.query_params}
