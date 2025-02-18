@@ -1,9 +1,6 @@
 from fastapi import FastAPI, HTTPException, Response, Depends
 from pydantic import BaseModel
-import psycopg2
 from sqlalchemy.orm import Session
-from psycopg2.extras import RealDictCursor
-import time
 from . import models
 from .database import get_db, engine
 
@@ -12,37 +9,15 @@ models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 
-try:
-    conn = psycopg2.connect(
-        host="localhost",
-        database="fastapi",
-        user="postgres",
-        password="PostRomagres8876",
-        cursor_factory=RealDictCursor,
-    )
-    cursor = conn.cursor()
-    print("Database connection was successful")
-except Exception as error:
-    print("Database connection was failed")
-    print(f"Error: {error}")
-    time.sleep(2)
-
-
 class Post(BaseModel):
     title: str
     content: str
     published: bool = True
 
 
-@app.get("/sqlalchemy")
-def test_posts(db: Session = Depends(get_db)):
-    return {"status": "success"}
-
-
 @app.get("/posts/{id}")
-def get_post(id: int):
-    cursor.execute(f"""SELECT * FROM posts WHERE id = {id}""")
-    post = cursor.fetchone()
+def get_post(id: int, db: Session = Depends(get_db)):
+    post = db.query(models.Post).filter(models.Post.id == id).one()
     if post:
         return post
     else:
@@ -50,41 +25,40 @@ def get_post(id: int):
 
 
 @app.get("/posts")
-def get_all_posts():
-    cursor.execute("""SELECT * FROM posts ORDER BY id""")
-    posts = cursor.fetchall()
-    return posts
+def get_all_posts(db: Session = Depends(get_db)):
+    posts = db.query(models.Post).all()
+    return {"data": posts}
 
 
 @app.post("/posts")
-def create_post(post: Post):
-    query = """INSERT INTO posts (title, content, published) VALUES (%s, %s, %s) RETURNING *"""
-    values = (post.title, post.content, post.published)
-    cursor.execute(query, values)
-    conn.commit()
-    return {"message": "The post was successfully created"}
+def create_post(post: Post, db: Session = Depends(get_db)):
+    new_post = models.Post(
+        title=post.title, content=post.content, published=post.published
+    )
+    db.add(new_post)
+    db.commit()
+    return {"message": "your post was successfully created"}
 
 
 @app.delete("/posts/{id}", status_code=204)
-def delete_post(id: int):
-    cursor.execute(f"""DELETE FROM posts WHERE id = {id} RETURNING True""")
-    posts = cursor.fetchone()
-    if posts:
-        conn.commit()
+def delete_post(id: int, db: Session = Depends(get_db)):
+    post = db.query(models.Post).filter(models.Post.id == id).one()
+    if post:
+        db.delete(post)
+        db.commit()
         yield Response(status_code=204)
     else:
         raise HTTPException(status_code=404, detail="sorry, your element doesn't exist")
 
 
 @app.put("/posts/{id}")
-def update_post(id: int, body: Post):
-    query = f"""UPDATE posts SET title = %s, content = %s, published = %s, created_at = now() 
-                WHERE id = {id} RETURNING *"""
-    values = (body.title, body.content, body.published)
-    cursor.execute(query, values)
-    post = cursor.fetchone()
+def update_post(id: int, body: Post, db: Session = Depends(get_db)):
+    post = db.query(models.Post).filter(models.Post.id == id).one()
     if post:
-        conn.commit()
+        post.title = body.title
+        post.content = body.content
+        post.published = body.published
+        db.commit()
         return {
             "information": {
                 "message": "The post was successfully updated",
