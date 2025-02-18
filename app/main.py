@@ -5,18 +5,12 @@ from sqlalchemy.orm import Session
 from psycopg2.extras import RealDictCursor
 import time
 from . import models
-from .database import SessionLocal, engine
+from .database import get_db, engine
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 try:
     conn = psycopg2.connect(
@@ -43,6 +37,7 @@ class Post(BaseModel):
 @app.get("/sqlalchemy")
 def test_posts(db: Session = Depends(get_db)):
     return {"status": "success"}
+
 
 @app.get("/posts/{id}")
 def get_post(id: int):
