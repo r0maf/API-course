@@ -37,16 +37,28 @@ def create_post(post: Post, db: Session = Depends(get_db)):
     )
     db.add(new_post)
     db.commit()
-    return {"message": "your post was successfully created"}
+    db.refresh(new_post)
+    return {
+            "information": {
+                "message": "The post was successfully created",
+                "created_post": post,
+            }
+        }
 
 
-@app.delete("/posts/{id}", status_code=204)
+@app.delete("/posts/{id}")
 def delete_post(id: int, db: Session = Depends(get_db)):
     post = db.query(models.Post).filter(models.Post.id == id).one()
     if post:
         db.delete(post)
         db.commit()
-        yield Response(status_code=204)
+        db.refresh(post)
+        return {
+            "information": {
+                "message": "The post was successfully deleted",
+                "deleted_post": post,
+            }
+        }
     else:
         raise HTTPException(status_code=404, detail="sorry, your element doesn't exist")
 
@@ -59,6 +71,7 @@ def update_post(id: int, body: Post, db: Session = Depends(get_db)):
         post.content = body.content
         post.published = body.published
         db.commit()
+        db.refresh(post)
         return {
             "information": {
                 "message": "The post was successfully updated",
