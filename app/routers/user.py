@@ -1,4 +1,5 @@
-from .. import models, schemas, utils
+from fastapi.security import OAuth2PasswordRequestForm
+from .. import models, schemas, utils, oauth2
 from fastapi import HTTPException, Response, Depends, status, APIRouter
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
@@ -9,51 +10,62 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 # можно реализовать номер телефона, восстановление пароля, смс и тд и тп
 @router.get("/", response_model=schemas.User)
-def get_user(pwd: str, email: schemas.EmailStr, db: Session = Depends(get_db)):
-    if email:
-        user = db.query(models.User).filter(models.User.email == email).first()
+def get_user(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(oauth2.get_current_user)
+):
+    if current_user.email:
+        user = (
+            db.query(models.User)
+            .filter(models.User.email == current_user.email)
+            .first()
+        )
     if not user:
         raise HTTPException(status_code=404, detail="sorry, your element doesn't exist")
 
-    if utils.password_hash_check(pwd, user.password):
-        user.password = pwd
-        return user
+    return user
 
 
 @router.delete("/", status_code=204)
-def delete_user(pwd: str, email: schemas.EmailStr, db: Session = Depends(get_db)):
-    if email:
-        user = db.query(models.User).filter(models.User.email == email).first()
+def delete_user(
+    db: Session = Depends(get_db), current_user: dict = Depends(oauth2.get_current_user)
+):
+    if current_user.email:
+        user = (
+            db.query(models.User)
+            .filter(models.User.email == current_user.email)
+            .first()
+        )
     if not user:
         raise HTTPException(status_code=404, detail="sorry, your element doesn't exist")
-    if utils.password_hash_check(pwd, user.password):
-        db.delete(user)
-        db.commit()
-        return Response(status_code=204)
+
+    db.delete(user)
+    db.commit()
+    return Response(status_code=204)
 
 
 @router.put("/", response_model=schemas.User)
 def update_user(
-    pwd: str,
-    email: schemas.EmailStr,
     body: schemas.CreateUser,
     db: Session = Depends(get_db),
+    current_user: dict = Depends(oauth2.get_current_user),
 ):
-    user = db.query(models.User).filter(models.User.email == email).first()
-    b_pwd = body.password
-    if not user:
-        raise HTTPException(status_code=404, detail="Sorry, your element doesn't exist")
+    try:
+        user = db.query(models.User).filter(models.User.email == current_user.email).first()
+        b_pwd = body.password
+        if not user:
+            raise HTTPException(status_code=404, detail="Sorry, your element doesn't exist")
 
-    if not utils.password_hash_check(pwd, user.password):
-        raise HTTPException(status_code=401, detail="Incorrect password")
+        body.password = utils.hash(body.password)
 
-    body.password = utils.hash(body.password)
-
-    user_query = db.query(models.User).filter(models.User.email == email)
-    user_query.update(body.model_dump(), synchronize_session=False)
-    db.commit()
-    db.refresh(user)
-    user.password = b_pwd
+        user_query = db.query(models.User).filter(models.User.email == current_user.email)
+        user_query.update(body.model_dump(), synchronize_session=False)
+        db.commit()
+        db.refresh(user)
+        user.password = b_pwd
+    except IntegrityError:
+        raise HTTPException(status_code=409, detail="an email already exists")
+    
     return user
 
 
@@ -72,4 +84,4 @@ def create_user(body: schemas.CreateUser, db: Session = Depends(get_db)):
         db.refresh(new_user)
         return new_user
     except IntegrityError:
-        raise HTTPException(status_code=404, detail="an email already exists")
+        raise HTTPException(status_code=409, detail="an email already exists")
