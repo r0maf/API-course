@@ -12,6 +12,7 @@ class PostBase(BaseModel):
 class CreatePost(PostBase):
     pass
 
+
 class UserOutput(BaseModel):
     id: int
     email: EmailStr
@@ -20,12 +21,19 @@ class UserOutput(BaseModel):
     class Config:
         orm_mode = True
 
+
 class Post(PostBase):
     id: int
     created_at: datetime
-    user_id: int
-    owner: UserOutput
+    user: UserOutput
 
+    class Config:
+        orm_mode = True
+
+class PostOut(BaseModel):
+    Post: Post
+    votes: int
+    
     class Config:
         orm_mode = True
 
@@ -52,6 +60,7 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     id: Optional[int] = None
 
+
 class Vote(BaseModel):
     post_id: int
-    dir: conint(le=1) # type: ignore
+    dir: conint(le=1)  # type: ignore

@@ -18,8 +18,8 @@ class Post(Base):
     created_at = Column(
         TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
     )
-
-    owner = relationship("User")
+    
+    user = relationship("User")
 
 
 class User(Base):
