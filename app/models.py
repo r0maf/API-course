@@ -9,7 +9,7 @@ class Post(Base):
     __tablename__ = "posts"
 
     id = Column(Integer, primary_key=True, nullable=False)
-    user_id = Column(
+    owner_id = Column(
         Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
     title = Column(String, nullable=False)
@@ -18,8 +18,8 @@ class Post(Base):
     created_at = Column(
         TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
     )
-    
-    user = relationship("User")
+
+    owner = relationship("User")
 
 
 class User(Base):
