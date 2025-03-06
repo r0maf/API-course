@@ -61,7 +61,7 @@ def create_posts(
     current_user: dict = Depends(oauth2.get_current_user),
 ):
     post = post.model_dump()
-    post["user_id"] = current_user.id
+    post["owner_id"] = current_user.id
     new_post = models.Post(**post)
     db.add(new_post)
     db.commit()
