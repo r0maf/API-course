@@ -46,7 +46,7 @@ def get_all_posts(
     )
     if my_posts:
         base_query = (
-            base_query.filter(models.Post.user_id == current_user.id)
+            base_query.filter(models.Post.owner_id == current_user.id)
         )
 
     results = base_query.limit(limit).offset(skip).all()
@@ -77,7 +77,7 @@ def delete_posts(
 ):
     post = db.query(models.Post).filter(models.Post.id == id).first()
 
-    if not current_user.id == post.user_id:
+    if not current_user.id == post.owner_id:
         raise HTTPException(status_code=403, detail="it isn't your post")
 
     if not post:
@@ -100,7 +100,7 @@ def update_posts(
     if not post_query.first():
         raise HTTPException(status_code=404, detail="sorry, your element doesn't exist")
 
-    if not current_user.id == post_query.first().user_id:
+    if not current_user.id == post_query.first().owner_id:
         raise HTTPException(status_code=403, detail="it isn't your post")
 
     post_query.update(body.model_dump(), synchronize_session=False)
