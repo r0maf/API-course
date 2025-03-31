@@ -14,9 +14,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 def root():
-    return {"message": "Hello worldю Hi Hi pipa"}
+    return {"message": "I will kill myself"}
+
 
 app.include_router(post.router)
 app.include_router(user.router)
