@@ -1,7 +1,6 @@
 from typing import Optional
 from fastapi import HTTPException, Query, Response, Depends, status, APIRouter
 from sqlalchemy.orm import Session
-from fastapi.encoders import jsonable_encoder
 from .. import models, schemas, oauth2
 from ..database import get_db
 from sqlalchemy import func
