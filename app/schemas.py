@@ -22,6 +22,11 @@ class UserOutput(BaseModel):
     class ConfigDict:
         from_attributes = True
 
+class Post2(PostBase):
+    id: int
+    created_at: datetime
+    owner_id: int
+
 
 class Post(PostBase):
     id: int
