@@ -75,17 +75,19 @@ def delete_posts(
     current_user: dict = Depends(oauth2.get_current_user),
 ):
     post = db.query(models.Post).filter(models.Post.id == id).first()
-    print("1 point")
+    
+    if post is None:
+        raise HTTPException(status_code=404, detail="post doesn't exist")
+    
     if not current_user.id == post.owner_id:
         raise HTTPException(status_code=403, detail="it isn't your post")
-    print("2 point")
+    
     if not post:
         raise HTTPException(status_code=404, detail="sorry, your element doesn't exist")
-    print("3 point")
+    
     db.delete(post)
     db.commit()
-    print("4 point")
-    print(current_user.id)
+    
     return Response(status_code=204)
 
 

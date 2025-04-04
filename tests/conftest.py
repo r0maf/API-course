@@ -95,3 +95,10 @@ def post_create(test_user, test_user2, session):
     
     posts = session.query(models.Post).all()
     return posts
+
+@pytest.fixture
+def vote_create(test_user, post_create, session):
+    vote = models.Vote(post_id=post_create[3].id, user_id=test_user["id"])
+    session.add(vote)
+    session.commit()
+    return
