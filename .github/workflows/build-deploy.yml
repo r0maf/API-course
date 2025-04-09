@@ -85,15 +85,15 @@ jobs:
     steps:
       - name: pulling github repo
         uses: actions/checkout@v2
-      - name: deploying to Render
-        uses: JorgeLNJunior/render-deploy@v1.4.5
-        with:
-          service_id: ${{ secrets.RENDER_SERVICE_ID }}
-          api_key: ${{ secrets.RENDER_API_KEY }}
-          clear_cache: true
-          wait_deploy: true
-          github_deployment: true
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+      # - name: deploying to Render
+      #   uses: JorgeLNJunior/render-deploy@v1.4.5
+      #   with:
+      #     service_id: ${{ secrets.RENDER_SERVICE_ID }}
+      #     api_key: ${{ secrets.RENDER_API_KEY }}
+      #     clear_cache: true
+      #     wait_deploy: true
+      #     github_deployment: true
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: deploying to ubuntu server
         uses: appleboy/ssh-action@v1
@@ -101,7 +101,7 @@ jobs:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USERNAME }}
           password: ${{ secrets.VM_PASSWORD }}
-          port: 80
+          port: 22
           script: |
             cd app/src
             git pull
