@@ -94,3 +94,14 @@ jobs:
           wait_deploy: true
           github_deployment: true
           github_token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: deploying to ubuntu server
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USERNAME }}
+          password: ${{ secrets.VM_PASSWORD }}
+          script: |
+            cd app/src
+            git pull
+            sudo systemctl restart api
