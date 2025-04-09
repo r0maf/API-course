@@ -11,7 +11,7 @@ def test_get_all_posts(auth_client, post_create):
     posts = map(validate_posts, resp.json())
 
     assert len(resp.json()) == len(post_create)
-    assert resp.status_code == 201 #error
+    assert resp.status_code == 200
 
 def test_not_auth_user(client):
     resp = client.get("/posts/")

@@ -17,7 +17,7 @@ app.add_middleware(
 
 @app.get("/")
 def root():
-    return {"message": "I want to have an error"}
+    return {"message": "I don't want to have an error"}
 
 
 app.include_router(post.router)
