@@ -17,7 +17,7 @@ app.add_middleware(
 
 @app.get("/")
 def root():
-    return {"message": "I want to say hello"}
+    return {"message": "I want to say hello (CI/CD)"}
 
 
 app.include_router(post.router)
