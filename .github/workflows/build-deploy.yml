@@ -98,10 +98,10 @@ jobs:
       - name: deploying to ubuntu server
         uses: appleboy/ssh-action@v1
         with:
-          host: 192.168.0.115
-          username: r0maf
-          password: roma123
-          port: 22
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USERNAME }}
+          password: ${{ secrets.VM_PASSWORD }}
+          port: ${{ secrets.VM_PORT }}
           script: |
             cd app/src
             git pull
