@@ -101,6 +101,7 @@ jobs:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USERNAME }}
           password: ${{ secrets.VM_PASSWORD }}
+          port: 80
           script: |
             cd app/src
             git pull
